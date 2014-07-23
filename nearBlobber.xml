@@ -1,0 +1,69 @@
+<module>
+    <!-- module's name should match its executable file's name. -->
+    <name>nearBlobber</name>
+    <description> Uses disparity to find closest object</description>
+    <version>2.0</version>
+
+    <!-- <arguments> can have multiple <param> tags-->
+    <arguments>
+        <param desc="Name of the module" default="nearBlobber"> name</param>
+        <param desc="Sub-path from \c $ICUB_ROOT/app to the configuration file" default="RBDemo/conf"> context </param>
+        <param desc="Configuration file" default="nearBlobber.ini"> from </param>        
+    </arguments>
+
+    <!-- <authors> can have multiple <author> tags. -->
+    <authors>
+	  <author email=""> Tanis Mar</author>
+    </authors>
+
+     <!-- <data> can have multiple <input> or <output> tags. -->
+     <data>
+        <!-- input data if available -->
+        <input type="service">
+            <type>rpc</type>
+            <port carrier="tcp">/nearBlobber/rpc:i</port>
+            <description>takes RPC commands from Human or stateMachine</description>
+        </input>
+        
+        <input>
+            <type>ImageOfPixelMono</type>
+            <port carrier="udp">/nearBlobber/disp:i</port>
+            <required>no</required>
+            <priority>no</priority>
+            <description>StereoDisparity disparity image</description>
+        </input>
+ 
+        
+        <!-- output data if available -->
+        <output>
+            <type>ImageOfPixelBgr</type>
+            <port carrier="udp">/nearBlobber/img:o</port>
+            <description> Identifies the closest blob and its center and bounding box superposed on the disparity image</description>
+        </output>
+        <output>
+            <type>Bottle</type>
+            <port carrier="tcp">/nearBlobber/target:o</port>
+            <description> Coordinates tl-br of the bounding box + margin around the closest blob</description>
+        </output>
+        <output>
+            <type>ImageOfPixelMono</type>
+            <port carrier="udp">/nearBlobber/imgBin:o</port>
+            <description> Send out the binary image of selected blob</description>
+        </output>
+    </data>
+
+    <dependencies>
+        <computer>
+        </computer>
+    </dependencies>
+
+    <!-- specific libraries or header files which are used for development -->
+    <development>
+        <header></header>
+        <library>YARP</library>
+        <library>stereoVision</library>
+        <library>OpenCV</library>
+    </development>
+
+</module>
+
