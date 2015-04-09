@@ -4,79 +4,78 @@
 <module>
     <!-- module's name should match its executable file's name. -->
     <name>nearBlobber</name>
-    <description> Uses disparity to find closest object</description>
+    <description> Extracts brightest blob in a gray image</description>
         <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
     <version>1.1</version>
     
     <description-long>
-    This module takes as an input a disparity/depth image and outputs the closest blob, both as a
-    binary image as well as the blob overimposed in green to the original depth image, and the blob 
-    center's coordinates        
-     
+    This module takes as input a grayscale image and outputs the brightest blob both as a
+    binary image and as an extracted rectangular crop around it, plus the blob centroid's coordinates and approximated area.
     </description-long>
 
     <!-- <arguments> can have multiple <param> tags-->
     <arguments>    
     <param desc="Name of the module" default="nearBlobber"> name</param>
     <param desc="Robot used" default="icub"> robot</param>
-    <param desc="Verbose" default="false"> verbose</param>
-    <param desc="Bounding Box Margin" default=20> margin</param>   
+    <param desc="Image height" default=240> imH</param>
+    <param desc="Image width" default=320> imW</param>
+    <param desc="[auto|<int>] side of the extracted crop. If it is an <int> the crop is a square region around the blob's centroid. If it is set to 'auto' the crop encloses the blob's shape." default="auto"> cropSize</param>
+    <param desc="Margin (border) to be left around the blob in the extracted crop (used only if cropSize='auto')" default=20> margin</param>   
     <param desc="Background Threshold" default=50> backgroundThresh</param>   
     <param desc="Max Luminance Threshold" default=190> frontThresh</param>   
-    <param desc="Canny Edge detector Threshold" default=20> cannyThresh</param>   
     <param desc="Minimum blob size" default=400> minBlobSize</param>   
-    <param desc="Gaussian blur size" default=5> gaussSize</param>   
-    <param desc="Gaussian blur size" default=5> gaussSize</param>  
-    <param desc="Max luminance ratio within blob, below avg lum." default=10> dispThreshRatioLow</param>      
-    <param desc="Max luminance ratio within blob, over avg lum. " default=20> dispThreshRatioHigh</param>      
+    <param desc="Gaussian blur size" default=5> gaussSize</param>    
+    <param desc="Max luminance ratio within blob, below avg lum." default=10> imageThreshRatioLow</param>      
+    <param desc="Max luminance ratio within blob, over avg lum. " default=20> imageThreshRatioHigh</param>      
     </arguments>
 
     <!-- <authors> can have multiple <author> tags. -->
     <authors>
 	  <author email="tanis.mar@iit.it"> Tanis Mar</author>
+          <author email="giulia.pasquale@iit.it"> Giulia Pasquale</author>
     </authors>
 
      <!-- <data> can have multiple <input> or <output> tags. -->
      <data>
-        <!-- input data if available -->
+        
         <input type="service">
             <type>rpc</type>
             <port carrier="tcp">/nearBlobber/rpc:i</port>
             <description> Takes the following RPC commands from Human or stateMachine
             
                 -# <b>margin</b> <i>(int) margin</i>: sets the margin (in pixels) that the ROI keeps around the closest blob.")
-                -# <b>thresh</b> <i>(int) high (int) low </i>: sets higher and lower limit of disparity in terms of luminosity (0-255) that is considered. In other words, objects with luminosity outside boundaries wont be considered.
-                -# <b>verbose</b> <i>(string) ON/OFF</i>: Sets active the printouts of the program, for debugging or visualization. 
+                -# <b>thresh</b> <i>(int) high (int) low </i>: sets higher and lower luminosity bounds (0-255) that are considered: blobs with luminosity outside this range are not considered.
                 -# <b>help</b> - produces this help.;
                 -# <b>quit</b> - closes the module.;                
             </description>
         </input>
         
         <input>
-            <type>ImageOfPixelMono</type>
-            <port carrier="udp">/nearBlobber/disp:i</port>
-            <required>no</required>
-            <priority>no</priority>
-            <description>StereoDisparity disparity image</description>
-        </input>
- 
-        
-        <!-- output data if available -->
-        <output>
             <type>ImageOfPixelBgr</type>
-            <port carrier="udp">/nearBlobber/img:o</port>
-            <description> Identifies the closest blob and its center and bounding box superposed on the disparity image</description>
-        </output>
+            <port carrier="udp">/nearBlobber/img:i</port>
+            <required>yes</required>
+            <priority>no</priority>
+            <description>Input image</description>
+        </input>
+        
         <output>
             <type>Bottle</type>
-            <port carrier="tcp">/nearBlobber/target:o</port>
-            <description> Coordinates tl-br of the bounding box + margin around the closest blob</description>
+            <port carrier="tcp">/nearBlobber/blobs:o</port>
+            <description>Coordinates of the blob's centroid and approximated area.</description>
         </output>
+
         <output>
             <type>ImageOfPixelMono</type>
-            <port carrier="udp">/nearBlobber/imgBin:o</port>
-            <description> Send out the binary image of selected blob</description>
+            <port carrier="udp">/nearBlobber/opt:o</port>
+            <description> Binary image of selected blob.</description>
         </output>
+
+        <output>
+            <type>ImageOfPixelBgr</type>
+            <port carrier="udp">/nearBlobber/crop:o</port>
+            <description> Cropped region around the selected blob.</description>
+        </output>
+
     </data>
 
     <dependencies>
@@ -84,11 +83,9 @@
         </computer>
     </dependencies>
 
-    <!-- specific libraries or header files which are used for development -->
     <development>
         <header></header>
         <library>YARP</library>
-        <library>stereoVision</library>
         <library>OpenCV</library>
     </development>
 

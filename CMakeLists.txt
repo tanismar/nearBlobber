@@ -1,15 +1,16 @@
-# Copyright: 2014 iCub Facility, Istituto Italiano di Tecnologia
-# Author: Tanis Mar
+# Copyright: 2015 iCub Facility, Istituto Italiano di Tecnologia
+# Authors: Tanis Mar, Giulia Pasquale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(PROJECTNAME nearBlobber)
 PROJECT(${PROJECTNAME})
 
 find_package(YARP)
 find_package(ICUB)
 find_package(ICUBcontrib)
+
 list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 list(APPEND CMAKE_MODULE_PATH ${ICUBCONTRIB_MODULE_PATH})
 
@@ -23,12 +24,12 @@ icubcontrib_set_default_prefix()
 add_definitions(${YARP_DEFINES})   # add yarp definitions - this contains also -D_REENTRANT
 
 file(GLOB source src/*.cpp)
-file(GLOB header include/*.h)
+file(GLOB header inc/*.h)
 
 source_group("Source Files" FILES ${source})
 source_group("Header Files" FILES ${header})
 
-include_directories(${PROJECT_SOURCE_DIR}/include
+include_directories(${PROJECT_SOURCE_DIR}/inc
                     ${YARP_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
                     )
