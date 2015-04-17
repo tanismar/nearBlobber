@@ -123,7 +123,7 @@ double nearBlobber::extractBlob(std::vector<cv::Mat> &images, std::vector<int> &
     std::vector<cv::Vec4i> hierarchy;
 
     // use aux because findContours modify the input image
-    aux = fillMask(cv::Range(1,image.rows), cv::Range(1,image.cols)).clone();
+    aux = fillMask(cv::Range(1,image.rows+1), cv::Range(1,image.cols+1)).clone();
     cv::findContours( aux, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
 
 
@@ -174,12 +174,13 @@ double nearBlobber::extractBlob(std::vector<cv::Mat> &images, std::vector<int> &
     	centroid.push_back(center2Dcoords.x);
     	centroid.push_back(center2Dcoords.y);
 
-        blob = fillMask(cv::Range(1,image.rows), cv::Range(1,image.cols)).clone();
+        fillMask(cv::Range(1,image.rows+1), cv::Range(1,image.cols+1)).copyTo(blob);
 
     }
     else
     {
-    	blob = cv::Mat::zeros(image.cols, image.rows, image.type());
+
+    	blob = cv::Mat::zeros(image.rows, image.cols, CV_8U);
 
     	blobSize = -1;
     }

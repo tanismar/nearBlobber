@@ -308,12 +308,11 @@ void NearBlobberPort::onRead(ImageOf<PixelBgr> &input)
 
     	if (optOutPort.getOutputCount()>0)
     	{
-    		yarp::sig::ImageOf<yarp::sig::PixelMono> blobImage;
 
-    		IplImage blobIplImage = blobMat;
-    		blobImage.wrapIplImage(&blobIplImage);
+    		yarp::sig::ImageOf<yarp::sig::PixelMono> &blobImage = optOutPort.prepare();
+    	    blobImage.resize(blobMat.cols, blobMat.rows);
 
-    		optOutPort.prepare() = blobImage;
+    	    blobMat.copyTo( cv::Mat( (IplImage*)blobImage.getIplImage() ) );
 
     		optOutPort.setEnvelope(stamp);
     		optOutPort.write();
@@ -334,11 +333,14 @@ void NearBlobberPort::onRead(ImageOf<PixelBgr> &input)
     		int dy2 = dy>>1;
 
     		cv::Point tl = cv::Point( std::max(x-dx2,0), std::max(y-dy2,0) );
-    		cv::Point br = cv::Point( std::min(x+dx2,blobMat.cols-1), std::min(y+dy2,blobMat.rows-1) );
+    		cv::Point br = cv::Point( std::min(x+dx2,blobMat.rows-1), std::min(y+dy2,blobMat.cols-1) );
 
     		cv::Rect roiRegion = cv::Rect(tl,br);
 
-    		imagesMatBuffer.back()(roiRegion).copyTo(cv::Mat( (IplImage*)cropOutPort.prepare().getIplImage() ));
+    		yarp::sig::ImageOf<yarp::sig::PixelBgr> &cropImage = cropOutPort.prepare();
+    		cropImage.resize(roiRegion.width, roiRegion.height);
+
+    		imagesMatBuffer.back()(roiRegion).copyTo( cv::Mat( (IplImage*)cropImage.getIplImage() ) );
 
     		cropOutPort.setEnvelope(stamp);
     		cropOutPort.write();
