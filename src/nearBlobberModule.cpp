@@ -158,8 +158,8 @@ NearBlobberPort::NearBlobberPort( const string &_moduleName, ResourceFinder &rf)
 
     fprintf(stdout,"Parsing parameters...\n");
 
-    int imH = moduleRF->check("imH", Value(240)).asInt();
-    int imW = moduleRF->check("imW", Value(320)).asInt();
+    int imH = moduleRF->check("imH", Value(480)).asInt();
+    int imW = moduleRF->check("imW", Value(640)).asInt();
 
 
     int margin = moduleRF->check("margin", Value(20)).asInt();
@@ -181,7 +181,7 @@ NearBlobberPort::NearBlobberPort( const string &_moduleName, ResourceFinder &rf)
     // threshold of intensity of the image above which info is ignored
     int frontThresh = moduleRF->check("frontThresh", Value(190)).asInt();
 
-    int minBlobSize = moduleRF->check("minBlobSize", Value(400)).asInt();
+    int minBlobSize = moduleRF->check("minBlobSize", Value(1600)).asInt();
 
     int gaussSize = moduleRF->check("gaussSize", Value(5)).asInt();
 
