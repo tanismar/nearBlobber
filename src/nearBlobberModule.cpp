@@ -161,6 +161,7 @@ NearBlobberPort::NearBlobberPort( const string &_moduleName, ResourceFinder &rf)
     int imH = moduleRF->check("imH", Value(480)).asInt();
     int imW = moduleRF->check("imW", Value(640)).asInt();
 
+    int bufferSize = moduleRF->check("bufferSize", Value(10)).asInt();
 
     int margin = moduleRF->check("margin", Value(20)).asInt();
     cropSize = 0;
@@ -190,7 +191,7 @@ NearBlobberPort::NearBlobberPort( const string &_moduleName, ResourceFinder &rf)
 
     blobExtractor = NULL;
 
-    blobExtractor = new nearBlobber(imH, imW,
+    blobExtractor = new nearBlobber(imH, imW, bufferSize,
     		margin,
     		backgroundThresh, frontThresh,
     		minBlobSize, gaussSize,

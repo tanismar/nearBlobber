@@ -20,6 +20,7 @@
 
 #include <string>
 #include <vector>
+#include <numeric>
 
 #include <opencv/cv.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -42,9 +43,14 @@ class nearBlobber
 
     cv::Mat aux, fillMask;
 
+    std::vector<cv::Point2f > center2DcoordsBuffer;
+    int bufferSize;
+
+    cv::Point mean_centroid;
+
 public:
 
-    nearBlobber(int imH, int imW,
+    nearBlobber(int imH, int imW, int _bufferSize,
     		int _margin,
     		int _backgroundThresh, int _frontThresh,
     		int _minBlobSize, int _gaussSize,

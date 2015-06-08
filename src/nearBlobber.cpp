@@ -19,7 +19,7 @@
 
 using namespace std;
 
-nearBlobber::nearBlobber(int imH, int imW,
+nearBlobber::nearBlobber(int imH, int imW, int _bufferSize,
 		int _margin,
 		int _backgroundThresh, int _frontThresh,
 		int _minBlobSize, int _gaussSize,
@@ -46,6 +46,8 @@ nearBlobber::nearBlobber(int imH, int imW,
     red = cv::Scalar(0,0,255);
     white = cv::Scalar(255,255,255);
 
+    bufferSize = _bufferSize;
+
 }
 
 bool nearBlobber::setThresh(int low, int high)
@@ -70,7 +72,7 @@ bool nearBlobber::setMargin(int mrg)
 double nearBlobber::extractBlob(std::vector<cv::Mat> &images, std::vector<int> &roi, std::vector<int> &centroid, cv::Mat &blob)
 {
 
-	cv::Mat image = images[0];
+	cv::Mat image = images[0].clone();
 
     cv::cvtColor(image, image, CV_BGR2GRAY);
 
@@ -156,12 +158,28 @@ double nearBlobber::extractBlob(std::vector<cv::Mat> &images, std::vector<int> &
         cv::Rect imBox(cv::Point(std::max(blobBox.tl().x-margin,0),std::max(blobBox.tl().y-margin,0)),cv::Point(std::min(blobBox.br().x+margin,image.cols-1),std::min(blobBox.br().y+margin,image.rows-1)));
 
 
-    	/* Get the centroid */
+    	/* Get the current centroid */
 
         cv::Moments mu = moments( contours[blobI], false );
 
-        cv::Point center2Dcoords = cv::Point2f( mu.m10/mu.m00 , mu.m01/mu.m00 );
+        //cv::Point center2Dcoords = cv::Point2f( mu.m10/mu.m00 , mu.m01/mu.m00 );
+        cv::Point2f center2Dcoords = cv::Point2f( mu.m10/mu.m00 , mu.m01/mu.m00 );
 
+        /* Update the buffer */
+
+        center2DcoordsBuffer.push_back(center2Dcoords);
+
+        if (center2DcoordsBuffer.size()>bufferSize) {
+        	assert(!center2DcoordsBuffer.empty());
+        	center2DcoordsBuffer.erase(center2DcoordsBuffer.begin());
+        }
+
+        /* Update the mean */
+
+        cv::Point2f zero(0.0f, 0.0f);
+        cv::Point2f sum  = std::accumulate(center2DcoordsBuffer.begin(), center2DcoordsBuffer.end(), zero);
+        mean_centroid.x = (int)round(sum.x / center2DcoordsBuffer.size());
+        mean_centroid.y = (int)round(sum.y / center2DcoordsBuffer.size());
 
         /* Return results */
 
@@ -171,8 +189,10 @@ double nearBlobber::extractBlob(std::vector<cv::Mat> &images, std::vector<int> &
     	roi.push_back(imBox.br().x);
     	roi.push_back(imBox.br().y);
 
-    	centroid.push_back(center2Dcoords.x);
-    	centroid.push_back(center2Dcoords.y);
+    	//centroid.push_back(center2Dcoords.x);
+    	//centroid.push_back(center2Dcoords.y);
+    	centroid.push_back(mean_centroid.x);
+    	centroid.push_back(mean_centroid.y);
 
         fillMask(cv::Range(1,image.rows+1), cv::Range(1,image.cols+1)).copyTo(blob);
 
@@ -183,6 +203,9 @@ double nearBlobber::extractBlob(std::vector<cv::Mat> &images, std::vector<int> &
     	blob = cv::Mat::zeros(image.rows, image.cols, CV_8U);
 
     	blobSize = -1;
+
+    	centroid.push_back(mean_centroid.x);
+    	centroid.push_back(mean_centroid.y);
     }
     
     return blobSize;
