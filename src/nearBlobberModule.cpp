@@ -212,14 +212,25 @@ bool NearBlobberPort::open()
 
     /* Outputs */
 
-    optOutPortName = "/" + moduleName + "/opt:o";
-    optOutPort.open(optOutPortName);
-
     blobsOutPortName = "/" + moduleName + "/blobs:o";
     blobsOutPort.open(blobsOutPortName);
+
+    roiOutPortName = "/" + moduleName + "/roi:o";
+    roiOutPort.open(roiOutPortName);
+
+    blobsOutPortRightName = "/" + moduleName + "/blobs/right:o";
+    blobsOutPortRight.open(blobsOutPortRightName);
+
+    roiOutPortRightName = "/" + moduleName + "/roi/right:o";
+    roiOutPortRight.open(roiOutPortRightName);
+
+    optOutPortName = "/" + moduleName + "/opt:o";
+    optOutPort.open(optOutPortName);
     
     cropOutPortName = "/" + moduleName + "/crop:o";
     cropOutPort.open(cropOutPortName);
+
+    sfmRpcPort.open(("/" + moduleName + "/sfm/rpc").c_str());
 
     return true;
 }
@@ -227,11 +238,16 @@ bool NearBlobberPort::open()
 void NearBlobberPort::close()
 {
     fprintf(stdout,"Closing ports...\n");
-    
-    optOutPort.close();
 
     blobsOutPort.close();
+    roiOutPort.close();
+    blobsOutPortRight.close();
+    roiOutPortRight.close();
+    
+    optOutPort.close();
     cropOutPort.close();
+
+    sfmRpcPort.close();
 
     BufferedPort<ImageOf<PixelBgr>  >::close();
             
@@ -243,10 +259,15 @@ void NearBlobberPort::interrupt()
    
     fprintf(stdout,"Attempting to interrupt ports...\n");
 
-    optOutPort.interrupt();
-
     blobsOutPort.interrupt();
+    roiOutPort.interrupt();
+    blobsOutPortRight.interrupt();
+    roiOutPortRight.interrupt();
+
+    optOutPort.interrupt();
     cropOutPort.interrupt();
+
+    sfmRpcPort.interrupt();
 
     BufferedPort<ImageOf<PixelBgr>  >::interrupt();
     
@@ -288,28 +309,8 @@ void NearBlobberPort::onRead(ImageOf<PixelBgr> &input)
     if (blobSize>0)
     {
 
-    	/* Prepare and write output blobs port */
-
-    	Bottle blobsBottle;
-
-    	Bottle &blobBottle = blobsBottle.addList();
-    	blobBottle.addInt(centroid[0]);
-    	blobBottle.addInt(centroid[1]);
-    	blobBottle.addInt((int)(blobSize+0.5f));
-
-    	if (blobsOutPort.getOutputCount()>0)
-    	{
-    		blobsOutPort.prepare() = blobsBottle;
-
-    		blobsOutPort.setEnvelope(stamp);
-    		blobsOutPort.write();
-    	}
-
-    	/* Prepare and write output opt port */
-
     	if (optOutPort.getOutputCount()>0)
     	{
-
     		yarp::sig::ImageOf<yarp::sig::PixelMono> &blobImage = optOutPort.prepare();
     	    blobImage.resize(blobMat.cols, blobMat.rows);
 
@@ -319,24 +320,23 @@ void NearBlobberPort::onRead(ImageOf<PixelBgr> &input)
     		optOutPort.write();
     	}
 
-	/* Prepare and write output crop port */
+    	int x = centroid[0];
+    	int y = centroid[1];
+
+    	int dx = ( (cropSize>0) ? cropSize : (roi[2]-roi[0]) );
+    	int dy = ( (cropSize>0) ? cropSize : (roi[3]-roi[1]) );
+
+    	int dx2 = dx>>1;
+    	int dy2 = dy>>1;
+
+    	int tlx = std::max(x-dx2,0);
+    	int tly = std::max(y-dy2,0);
+    	int brx = std::min(x+dx2,blobMat.rows-1);
+    	int bry = std::min(y+dy2,blobMat.cols-1);
 
     	if (cropOutPort.getOutputCount()>0)
     	{
-
-    		int x = centroid[0];
-    		int y = centroid[1];
-
-    		int dx = ( (cropSize>0) ? cropSize : (roi[2]-roi[0]) );
-    		int dy = ( (cropSize>0) ? cropSize : (roi[3]-roi[1]) );
-
-    		int dx2 = dx>>1;
-    		int dy2 = dy>>1;
-
-    		cv::Point tl = cv::Point( std::max(x-dx2,0), std::max(y-dy2,0) );
-    		cv::Point br = cv::Point( std::min(x+dx2,blobMat.rows-1), std::min(y+dy2,blobMat.cols-1) );
-
-    		cv::Rect roiRegion = cv::Rect(tl,br);
+    		cv::Rect roiRegion = cv::Rect(cv::Point( tlx, tly ), cv::Point( brx, bry ));
 
     		yarp::sig::ImageOf<yarp::sig::PixelBgr> &cropImage = cropOutPort.prepare();
     		cropImage.resize(roiRegion.width, roiRegion.height);
@@ -346,6 +346,160 @@ void NearBlobberPort::onRead(ImageOf<PixelBgr> &input)
     		cropOutPort.setEnvelope(stamp);
     		cropOutPort.write();
 
+    	}
+
+    	if (roiOutPort.getOutputCount()>0)
+    	{
+           	Bottle roisBottle;
+
+            Bottle &roiBottle = roisBottle.addList();
+            roiBottle.addInt(tlx);
+            roiBottle.addInt(tly);
+            roiBottle.addInt(brx);
+            roiBottle.addInt(bry);
+
+    		roiOutPort.prepare() = roisBottle;
+
+        	roiOutPort.setEnvelope(stamp);
+        	roiOutPort.write();
+    	}
+
+    	if (blobsOutPort.getOutputCount()>0)
+    	{
+        	Bottle blobsBottle;
+
+        	Bottle &blobBottle = blobsBottle.addList();
+        	blobBottle.addInt(centroid[0]);
+        	blobBottle.addInt(centroid[1]);
+        	blobBottle.addInt((int)(blobSize+0.5f));
+
+    		blobsOutPort.prepare() = blobsBottle;
+
+    		blobsOutPort.setEnvelope(stamp);
+    		blobsOutPort.write();
+    	}
+
+    	if (roiOutPortRight.getOutputCount()>0)
+    	{
+    		Bottle roisBottle;
+    		Bottle &roiBottle = roisBottle.addList();
+
+    		Bottle cmd_sfm, reply_sfm;
+
+    		cmd_sfm.addInt(tlx);
+    	    cmd_sfm.addInt(tly);
+    	    sfmRpcPort.write(cmd_sfm,reply_sfm);
+
+    	    if (reply_sfm.size()>0)
+    	    {
+    	    	double tlX = reply_sfm.get(0).asDouble();
+    	    	double tlY = reply_sfm.get(1).asDouble();
+    	        double tlZ = reply_sfm.get(2).asDouble();
+
+    	        if (tlX!=0 && tlY!=0 && tlZ!=0)
+    	        {
+    	        	int tlur = reply_sfm.get(3).asInt();
+    	        	int tlvr = reply_sfm.get(4).asInt();
+
+    	        	roiBottle.addInt(tlur);
+    	        	roiBottle.addInt(tlvr);
+    	        	roiBottle.addDouble(tlX);
+    	        	roiBottle.addDouble(tlY);
+    	        	roiBottle.addDouble(tlZ);
+    	        }
+    	        else
+    	        {
+    	        	roiBottle.addInt(-1);
+    	        }
+    	    }
+    	    else
+    	    {
+    	    	cout << "Error: no reply from /SFM/rpc!" << endl;
+    	    }
+
+    	    cmd_sfm.clear();
+    	    reply_sfm.clear();
+
+    		cmd_sfm.addInt(brx);
+    	    cmd_sfm.addInt(bry);
+    	    sfmRpcPort.write(cmd_sfm,reply_sfm);
+
+    	    if (reply_sfm.size()>0)
+    	    {
+    	    	double brX = reply_sfm.get(0).asDouble();
+    	    	double brY = reply_sfm.get(1).asDouble();
+    	        double brZ = reply_sfm.get(2).asDouble();
+
+    	        if (brX!=0 && brY!=0 && brZ!=0)
+    	        {
+    	        	int brur = reply_sfm.get(3).asInt();
+    	        	int brvr = reply_sfm.get(4).asInt();
+
+    	        	roiBottle.addInt(brur);
+    	        	roiBottle.addInt(brvr);
+    	        	roiBottle.addDouble(brX);
+    	        	roiBottle.addDouble(brY);
+    	        	roiBottle.addDouble(brZ);
+    	        }
+    	        else
+    	        {
+    	        	roiBottle.addInt(-1);
+    	        }
+    	    }
+    	    else
+    	    {
+    	    	cout << "Error: no reply from /SFM/rpc!" << endl;
+    	    }
+
+    	    roiOutPortRight.prepare() = roisBottle;
+
+    	    roiOutPortRight.setEnvelope(stamp);
+    	    roiOutPortRight.write();
+
+    	}
+
+    	if (blobsOutPortRight.getOutputCount()>0)
+    	{
+    	    Bottle blobsBottle;
+    	    Bottle &blobBottle = blobsBottle.addList();
+
+    		Bottle cmd_sfm, reply_sfm;
+
+    		cmd_sfm.addInt(centroid[0]);
+    	    cmd_sfm.addInt(centroid[1]);
+    	    sfmRpcPort.write(cmd_sfm,reply_sfm);
+
+    	    if (reply_sfm.size()>0)
+    	    {
+    	    	double X = reply_sfm.get(0).asDouble();
+    	    	double Y = reply_sfm.get(1).asDouble();
+    	    	double Z = reply_sfm.get(2).asDouble();
+
+    	    	if (X!=0 && Y!=0 && Z!=0)
+    	    	{
+    	    		int ur = reply_sfm.get(3).asInt();
+    	    		int vr = reply_sfm.get(4).asInt();
+
+    	    		blobBottle.addInt(ur);
+    	    		blobBottle.addInt(vr);
+    	    		blobBottle.addDouble(X);
+    	    		blobBottle.addDouble(Y);
+    	    		blobBottle.addDouble(Z);
+    	    	}
+    	    	else
+    	    	{
+    	    		blobBottle.addInt(-1);
+    	    	}
+
+    	    	blobsOutPortRight.prepare() = blobsBottle;
+
+    	    	blobsOutPortRight.setEnvelope(stamp);
+    	    	blobsOutPortRight.write();
+    	    }
+    	    else
+    	    {
+    	    	cout << "Error: no reply from /SFM/rpc!" << endl;
+    	    }
     	}
 
     }

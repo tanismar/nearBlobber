@@ -19,6 +19,7 @@
 #define __NEARBLOBBERMODULE_H__
 
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/RpcClient.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
@@ -45,14 +46,24 @@ private:
     std::string imgInPortName;
 
     std::string blobsOutPortName;
-    std::string cropOutPortName;
+    std::string roiOutPortName;
 
+    std::string blobsOutPortRightName;
+    std::string roiOutPortRightName;
+
+    std::string cropOutPortName;
     std::string optOutPortName;
 
     yarp::os::BufferedPort<yarp::os::Bottle>							blobsOutPort;
+    yarp::os::BufferedPort<yarp::os::Bottle>							roiOutPort;
+
+    yarp::os::BufferedPort<yarp::os::Bottle>							blobsOutPortRight;
+    yarp::os::BufferedPort<yarp::os::Bottle>							roiOutPortRight;
+
     yarp::os::BufferedPort< yarp::sig::ImageOf<yarp::sig::PixelBgr> >   cropOutPort;
-    
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> >	optOutPort;
+
+    yarp::os::RpcClient 												sfmRpcPort;
 
     std::vector<cv::Mat> imagesMatBuffer;
     
