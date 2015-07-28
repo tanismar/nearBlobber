@@ -46,18 +46,20 @@ private:
     std::string imgInPortName;
 
     std::string blobsOutPortName;
-    std::string roiOutPortName;
-
     std::string blobsOutPortRightName;
+    std::string points3dOutPortName;
+
+    std::string roiOutPortName;
     std::string roiOutPortRightName;
 
     std::string cropOutPortName;
     std::string optOutPortName;
 
     yarp::os::BufferedPort<yarp::os::Bottle>							blobsOutPort;
-    yarp::os::BufferedPort<yarp::os::Bottle>							roiOutPort;
-
     yarp::os::BufferedPort<yarp::os::Bottle>							blobsOutPortRight;
+    yarp::os::BufferedPort<yarp::os::Bottle>							points3dOutPort;
+
+    yarp::os::BufferedPort<yarp::os::Bottle>							roiOutPort;
     yarp::os::BufferedPort<yarp::os::Bottle>							roiOutPortRight;
 
     yarp::os::BufferedPort< yarp::sig::ImageOf<yarp::sig::PixelBgr> >   cropOutPort;
