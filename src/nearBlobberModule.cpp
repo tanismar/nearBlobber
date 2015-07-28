@@ -455,12 +455,12 @@ void NearBlobberPort::onRead(ImageOf<PixelBgr> &input)
 
     	    if (reply_sfm.size()>0)
     	    {
+    	    	double X = reply_sfm.get(0).asDouble();
+    	    	double Y = reply_sfm.get(1).asDouble();
+    	    	double Z = reply_sfm.get(2).asDouble();
+
     	    	if (points3dOutPort.getOutputCount()>0)
     	    	{
-    	    		double X = reply_sfm.get(0).asDouble();
-    	    		double Y = reply_sfm.get(1).asDouble();
-    	    		double Z = reply_sfm.get(2).asDouble();
-
     	    		Bottle points3dBottle;
     	    		Bottle &point3dBottle = points3dBottle.addList();
 
