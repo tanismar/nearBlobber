@@ -38,4 +38,5 @@ add_executable(${PROJECTNAME} ${source} ${header})
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ${OpenCV_LIBRARIES})
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
-yarp_install(FILES app/scripts/${PROJECTNAME}.xml DESTINATION ${ICUBCONTRIB_MODULES_INSTALL_DIR})
+file(GLOB templates app/scripts/*.xml.template)
+yarp_install(FILES ${templates} DESTINATION ${ICUBCONTRIB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
