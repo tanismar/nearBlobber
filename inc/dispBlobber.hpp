@@ -15,8 +15,8 @@
  * Public License for more details
  */
 
-#ifndef __NEARBLOBBER_H__
-#define __NEARBLOBBER_H__
+#ifndef __DISPBLOBBER_H__
+#define __DISPBLOBBER_H__
 
 #include <string>
 #include <vector>
@@ -25,13 +25,12 @@
 #include <opencv/cv.h>
 #include <opencv2/highgui/highgui.hpp>
 
-class nearBlobber
+class dispBlobber
 {
 
 	int margin;
 
 	int backgroundThresh;
-    int frontThresh;
 
     int minBlobSize;
     int gaussSize;
@@ -50,13 +49,13 @@ class nearBlobber
 
 public:
 
-    nearBlobber(int imH, int imW, int _bufferSize,
+    dispBlobber(int imH, int imW, int _bufferSize,
     		int _margin,
-    		int _backgroundThresh, int _frontThresh,
+    		int _backgroundThresh,
     		int _minBlobSize, int _gaussSize,
     		int _dispThreshRatioLow, int _dispThreshRatioHigh);
 
-    bool setThresh(int low, int high);
+    bool setThresh(int low);
     bool setMargin(int mrg);
 
     double extractBlob(std::vector<cv::Mat> &images, std::vector<int> &roi, std::vector<int> &centroid, cv::Mat &blob);

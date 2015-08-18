@@ -15,8 +15,8 @@
  * Public License for more details
  */
 
-#ifndef __NEARBLOBBERMODULE_H__
-#define __NEARBLOBBERMODULE_H__
+#ifndef __DISPBLOBBERMODULE_H__
+#define __DISPBLOBBERMODULE_H__
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RpcClient.h>
@@ -33,9 +33,9 @@
 #include <string>
 #include <iostream>
 
-#include "nearBlobber.hpp"
+#include "dispBlobber.hpp"
 
-class NearBlobberPort : public yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelBgr> >
+class DispBlobberPort : public yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelBgr> >
 {
 private:
 
@@ -69,13 +69,13 @@ private:
 
     std::vector<cv::Mat> imagesMatBuffer;
     
-    nearBlobber *blobExtractor;
+    dispBlobber *blobExtractor;
 
     int cropSize;
 
 public:
 
-    NearBlobberPort( const std::string &moduleName, yarp::os::ResourceFinder &module );
+    DispBlobberPort( const std::string &moduleName, yarp::os::ResourceFinder &module );
 
     bool        open();
     void        close();
@@ -83,13 +83,13 @@ public:
     void        interrupt();
     
     bool        setMargin(int mrg);
-    bool        setThresh(int low, int high);
+    bool        setThresh(int low);
 
     yarp::os::Semaphore mutex;
        
 };
 
-class NearBlobberModule : public yarp::os::RFModule
+class DispBlobberModule : public yarp::os::RFModule
 {
 
     std::string             moduleName;
@@ -97,7 +97,7 @@ class NearBlobberModule : public yarp::os::RFModule
     std::string             handlerPortName;    
     yarp::os::RpcServer     handlerPort;
 
-    NearBlobberPort         *blobPort;
+    DispBlobberPort         *blobPort;
     bool                    closing;
 
 public:

@@ -14,8 +14,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
-
-#include "nearBlobberModule.hpp"
+#include "dispBlobberModule.hpp"
 
 using namespace cv;
 using namespace std;
@@ -23,9 +22,9 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 
-bool NearBlobberModule::configure(yarp::os::ResourceFinder &rf)
+bool DispBlobberModule::configure(yarp::os::ResourceFinder &rf)
 {
-    moduleName = rf.check("name", Value("nearBlobber"), "module name (string)").asString();
+    moduleName = rf.check("name", Value("dispBlobber"), "module name (string)").asString();
 
     setName(moduleName.c_str());
 
@@ -39,7 +38,7 @@ bool NearBlobberModule::configure(yarp::os::ResourceFinder &rf)
     }
     attach(handlerPort);
 
-    blobPort = new NearBlobberPort( moduleName, rf );
+    blobPort = new DispBlobberPort( moduleName, rf );
 
     blobPort->open();
 
@@ -48,7 +47,7 @@ bool NearBlobberModule::configure(yarp::os::ResourceFinder &rf)
     return true ;
 }
 
-bool NearBlobberModule::interruptModule()
+bool DispBlobberModule::interruptModule()
 {
     closing = true;
 
@@ -59,7 +58,7 @@ bool NearBlobberModule::interruptModule()
     return true;
 }
 
-bool NearBlobberModule::close()
+bool DispBlobberModule::close()
 {
     handlerPort.close();
 
@@ -74,12 +73,12 @@ bool NearBlobberModule::close()
     return true;
 }
 
-bool NearBlobberModule::updateModule()
+bool DispBlobberModule::updateModule()
 {
     return !closing;
 }
 
-bool NearBlobberModule::respond(const Bottle &command, Bottle &reply)
+bool DispBlobberModule::respond(const Bottle &command, Bottle &reply)
 {
 
     reply.clear();
@@ -104,7 +103,7 @@ bool NearBlobberModule::respond(const Bottle &command, Bottle &reply)
     }
     if (receivedCmd == "thresh")
     {
-        bool ok = blobPort->setThresh(command.get(1).asInt(), command.get(2).asInt());
+        bool ok = blobPort->setThresh(command.get(1).asInt());
         if (ok)
             responseCode = Vocab::encode("ack");
         else {
@@ -122,7 +121,7 @@ bool NearBlobberModule::respond(const Bottle &command, Bottle &reply)
 
         reply.addString("Available commands are:");
         reply.addString("margin (int) - sets the margin (in pixels) that the ROI keeps around the closest blob.");
-        reply.addString("thresh (int) (int)- sets higher and lower luminosity limits (0-255) that are considered. Objects with luminosity outside boundaries wont be considered.");
+        reply.addString("thresh (int) - sets lower luminosity limit (0-255) that is considered. Objects with luminosity lower than the boundary wont be considered.");
         reply.addString("help - produces this help.");
         reply.addString("quit - closes the module.");
         
@@ -144,12 +143,12 @@ bool NearBlobberModule::respond(const Bottle &command, Bottle &reply)
     return true;
 }
 
-double NearBlobberModule::getPeriod()
+double DispBlobberModule::getPeriod()
 {
     return 0.1;
 }
 
-NearBlobberPort::NearBlobberPort( const string &_moduleName, ResourceFinder &rf)
+DispBlobberPort::DispBlobberPort( const string &_moduleName, ResourceFinder &rf)
 {
 
     this->moduleName = _moduleName;
@@ -158,10 +157,10 @@ NearBlobberPort::NearBlobberPort( const string &_moduleName, ResourceFinder &rf)
 
     fprintf(stdout,"Parsing parameters...\n");
 
-    int imH = moduleRF->check("imH", Value(480)).asInt();
-    int imW = moduleRF->check("imW", Value(640)).asInt();
+    int imH = moduleRF->check("imH", Value(240)).asInt();
+    int imW = moduleRF->check("imW", Value(320)).asInt();
 
-    int bufferSize = moduleRF->check("bufferSize", Value(10)).asInt();
+    int bufferSize = moduleRF->check("bufferSize", Value(1)).asInt();
 
     int margin = moduleRF->check("margin", Value(20)).asInt();
     cropSize = 0;
@@ -178,11 +177,9 @@ NearBlobberPort::NearBlobberPort( const string &_moduleName, ResourceFinder &rf)
     }
 
     // threshold of intensity of the image under which info is ignored
-    int backgroundThresh = moduleRF->check("backgroundThresh", Value(50)).asInt();
-    // threshold of intensity of the image above which info is ignored
-    int frontThresh = moduleRF->check("frontThresh", Value(190)).asInt();
-
-    int minBlobSize = moduleRF->check("minBlobSize", Value(1600)).asInt();
+    int backgroundThresh = moduleRF->check("backgroundThresh", Value(30)).asInt();
+   
+    int minBlobSize = moduleRF->check("minBlobSize", Value(300)).asInt();
 
     int gaussSize = moduleRF->check("gaussSize", Value(5)).asInt();
 
@@ -191,14 +188,14 @@ NearBlobberPort::NearBlobberPort( const string &_moduleName, ResourceFinder &rf)
 
     blobExtractor = NULL;
 
-    blobExtractor = new nearBlobber(imH, imW, bufferSize,
+    blobExtractor = new dispBlobber(imH, imW, bufferSize,
     		margin,
-    		backgroundThresh, frontThresh,
+    		backgroundThresh,
     		minBlobSize, gaussSize,
     		imageThreshRatioLow, imageThreshRatioHigh);
 }
 
-bool NearBlobberPort::open()
+bool DispBlobberPort::open()
 {
 
     this->useCallback();
@@ -212,7 +209,7 @@ bool NearBlobberPort::open()
 
     /* Outputs */
 
-    blobsOutPortName = "/" + moduleName + "/blobs:o";
+    blobsOutPortName = "/" + moduleName + "/blobs/left:o";
     blobsOutPort.open(blobsOutPortName);
 
     blobsOutPortRightName = "/" + moduleName + "/blobs/right:o";
@@ -221,7 +218,7 @@ bool NearBlobberPort::open()
     points3dOutPortName = "/" + moduleName + "/points3d:o";;
     points3dOutPort.open(points3dOutPortName);
 
-    roiOutPortName = "/" + moduleName + "/roi:o";
+    roiOutPortName = "/" + moduleName + "/roi/left:o";
     roiOutPort.open(roiOutPortName);
 
     roiOutPortRightName = "/" + moduleName + "/roi/right:o";
@@ -238,7 +235,7 @@ bool NearBlobberPort::open()
     return true;
 }
 
-void NearBlobberPort::close()
+void DispBlobberPort::close()
 {
     fprintf(stdout,"Closing ports...\n");
 
@@ -259,7 +256,7 @@ void NearBlobberPort::close()
     fprintf(stdout,"Finished closing ports...\n");
 }
 
-void NearBlobberPort::interrupt()
+void DispBlobberPort::interrupt()
 {	
    
     fprintf(stdout,"Attempting to interrupt ports...\n");
@@ -281,18 +278,18 @@ void NearBlobberPort::interrupt()
     fprintf(stdout,"Finished interrupting ports...\n");
 }
 
-bool NearBlobberPort::setThresh(int low, int high)
+bool DispBlobberPort::setThresh(int low)
 {
-    return blobExtractor->setThresh(low, high);
+    return blobExtractor->setThresh(low);
 
 }
 
-bool NearBlobberPort::setMargin(int mrg)
+bool DispBlobberPort::setMargin(int mrg)
 {
     return blobExtractor->setMargin(mrg);
 }
 
-void NearBlobberPort::onRead(ImageOf<PixelBgr> &input)
+void DispBlobberPort::onRead(ImageOf<PixelBgr> &input)
 {
     mutex.wait();
 

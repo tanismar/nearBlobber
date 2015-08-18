@@ -15,13 +15,13 @@
  * Public License for more details
  */
 
-#include "nearBlobber.hpp"
+#include "dispBlobber.hpp"
 
 using namespace std;
 
-nearBlobber::nearBlobber(int imH, int imW, int _bufferSize,
+dispBlobber::dispBlobber(int imH, int imW, int _bufferSize,
 		int _margin,
-		int _backgroundThresh, int _frontThresh,
+		int _backgroundThresh,
 		int _minBlobSize, int _gaussSize,
 		int _imageThreshRatioLow, int _imageThreshRatioHigh)
 {
@@ -32,7 +32,6 @@ nearBlobber::nearBlobber(int imH, int imW, int _bufferSize,
     margin = _margin;
     
 	backgroundThresh = _backgroundThresh;		// threshold of intensity on the image under which info is ignored
-    frontThresh = _frontThresh;					// threshold of intensity on the image above which info is ignored
     
 	minBlobSize = _minBlobSize;
     
@@ -50,26 +49,26 @@ nearBlobber::nearBlobber(int imH, int imW, int _bufferSize,
 
 }
 
-bool nearBlobber::setThresh(int low, int high)
+bool dispBlobber::setThresh(int low)
 {
-    if ((low<0) ||(low>255)||(high<0) ||(high>255)) {
+    if ( low<0 || low>255 ) {
         fprintf(stdout,"Please select valid luminance values (0-255). \n");
         return false;
     }
-    fprintf(stdout,"New Threshold is : %i, %i\n", low, high);
+
+    fprintf(stdout,"New Threshold is : %i\n", low);
     backgroundThresh = low;
-    frontThresh = high;
     return true;
 }
 
-bool nearBlobber::setMargin(int mrg)
+bool dispBlobber::setMargin(int mrg)
 {
     fprintf(stdout,"New margin : %d\n", mrg);
     margin = mrg;
     return true;
 }
 
-double nearBlobber::extractBlob(std::vector<cv::Mat> &images, std::vector<int> &roi, std::vector<int> &centroid, cv::Mat &blob)
+double dispBlobber::extractBlob(std::vector<cv::Mat> &images, std::vector<int> &roi, std::vector<int> &centroid, cv::Mat &blob)
 {
 
 	cv::Mat image = images[0].clone();

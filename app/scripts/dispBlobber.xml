@@ -3,7 +3,7 @@
  
 <module>
     <!-- module's name should match its executable file's name. -->
-    <name>nearBlobber</name>
+    <name>dispBlobber</name>
     <description> Extracts brightest blob in a gray image</description>
         <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
     <version>1.1</version>
@@ -15,15 +15,14 @@
 
     <!-- <arguments> can have multiple <param> tags-->
     <arguments>    
-    <param desc="Name of the module" default="nearBlobber"> name</param>
+    <param desc="Name of the module" default="dispBlobber"> name</param>
     <param desc="Robot used" default="icub"> robot</param>
     <param desc="Image height" default=240> imH</param>
     <param desc="Image width" default=320> imW</param>
     <param desc="[auto|<int>] side of the extracted crop. If it is an <int> the crop is a square region around the blob's centroid. If it is set to 'auto' the crop encloses the blob's shape." default="auto"> cropSize</param>
     <param desc="Margin (border) to be left around the blob in the extracted crop (used only if cropSize='auto')" default=20> margin</param>   
-    <param desc="Background Threshold" default=50> backgroundThresh</param>   
-    <param desc="Max Luminance Threshold" default=190> frontThresh</param>   
-    <param desc="Minimum blob size" default=400> minBlobSize</param>   
+    <param desc="Background Threshold" default=30> backgroundThresh</param>
+    <param desc="Minimum blob size" default=300> minBlobSize</param>
     <param desc="Gaussian blur size" default=5> gaussSize</param>    
     <param desc="Max luminance ratio within blob, below avg lum." default=10> imageThreshRatioLow</param>      
     <param desc="Max luminance ratio within blob, over avg lum. " default=20> imageThreshRatioHigh</param>      
@@ -40,7 +39,7 @@
         
         <input type="service">
             <type>rpc</type>
-            <port carrier="tcp">/nearBlobber/rpc:i</port>
+            <port carrier="tcp">/dispBlobber/rpc:i</port>
             <description> Takes the following RPC commands from Human or stateMachine
             
                 -# <b>margin</b> <i>(int) margin</i>: sets the margin (in pixels) that the ROI keeps around the closest blob.")
@@ -52,7 +51,7 @@
         
         <input>
             <type>ImageOfPixelBgr</type>
-            <port carrier="udp">/nearBlobber/img:i</port>
+            <port carrier="udp">/dispBlobber/img:i</port>
             <required>yes</required>
             <priority>no</priority>
             <description>Input image</description>
@@ -60,22 +59,52 @@
         
         <output>
             <type>Bottle</type>
-            <port carrier="tcp">/nearBlobber/blobs:o</port>
-            <description>Coordinates of the blob's centroid and approximated area.</description>
+            <port carrier="tcp">/dispBlobber/blobs/left:o</port>
+            <description>Coordinates of the blob's centroid on the left image and approximated area.</description>
+        </output>
+
+        <output>
+            <type>Bottle</type>
+            <port carrier="tcp">/dispBlobber/blobs/right:o</port>
+            <description>Coordinates of the blob's centroid on the right image and approximated area.</description>
         </output>
 
         <output>
             <type>ImageOfPixelMono</type>
-            <port carrier="udp">/nearBlobber/opt:o</port>
+            <port carrier="udp">/dispBlobber/opt:o</port>
             <description> Binary image of selected blob.</description>
         </output>
 
         <output>
             <type>ImageOfPixelBgr</type>
-            <port carrier="udp">/nearBlobber/crop:o</port>
+            <port carrier="udp">/dispBlobber/crop:o</port>
             <description> Cropped region around the selected blob.</description>
         </output>
+        
+        <output>
+            <type>Bottle</type>
+            <port carrier="tcp">/dispBlobber/points3d:o</port>
+            <description>3D Coordinates of the blob's centroid in the root RF.</description>
+        </output>
 
+        <output>
+            <type>Bottle</type>
+            <port carrier="tcp">/dispBlobber/roi/left:o</port>
+            <description>Coordinates of the TL and BR points of the ROI around the blob on the left image.</description>
+        </output>
+
+        <output>
+            <type>Bottle</type>
+            <port carrier="tcp">/dispBlobber/roi/right:o</port>
+            <description>Coordinates of the TL and BR points of the ROI around the blob on the right image.</description>
+        </output>
+     
+        <output>
+            <type>Bottle</type>
+            <port carrier="tcp">/dispBlobber/sfm/rpc</port
+            <description>RPC port communicating with the SFM module RPC port.</description>
+        </output>
+     
     </data>
 
     <dependencies>

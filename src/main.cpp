@@ -15,7 +15,7 @@
  * Public License for more details
  */
 
-#include "nearBlobberModule.hpp"
+#include "dispBlobberModule.hpp"
 
 using namespace yarp::os;
 
@@ -24,13 +24,13 @@ int main(int argc, char * argv[])
 
     Network::init();
 
-    NearBlobberModule module;
+    DispBlobberModule module;
 
     ResourceFinder rf;
     rf.setVerbose( true );
-    rf.setDefaultContext( "nearBlobber/conf" );
-    rf.setDefaultConfigFile( "nearBlobber.ini" );
-    rf.setDefault("name","nearBlobber");
+    rf.setDefaultContext( "dispBlobber/conf" );
+    rf.setDefaultConfigFile( "dispBlobber.ini" );
+    rf.setDefault("name","dispBlobber");
     rf.configure( argc, argv );
 
     module.runModule(rf);
