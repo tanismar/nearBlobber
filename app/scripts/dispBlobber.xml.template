@@ -12,35 +12,30 @@
             <name>SFM</name>
             <parameters>--elas_setting MIDDLEBURY --elas_ipol_gap_width 20</parameters>
             <node>icubNode</node>
-            <tag>SFM</tag>
         </module>
 
 		<module>
                 <name>dispBlobber</name>
                 <parameters></parameters>
                 <node>icubNode</node>
-                <tag>nearBlobber</tag>
         </module>
         
         <module>
             <name>yarpview</name>
             <parameters>--name /matchViewer --x 0</parameters>
             <node>icubNode</node>
-            <tag>matchViewer</tag>
         </module>
 
         <module>
             <name>yarpview</name>
             <parameters>--name /dispViewer --x 330</parameters>
             <node>icubNode</node>
-            <tag>dispViewer</tag>
         </module>
 
         <module>
                 <name>yarpview</name>
                 <parameters>--name /nearBlobberViewer</parameters>
                 <node>icubNode</node>
-                <tag>nearBlobberViewer</tag>
         </module>
 
         <!-- Connections -->
@@ -73,10 +68,10 @@
             <protocol>tcp</protocol>
         </connection> 
 
-        <!-- iCubWorldManager -->
+        <!-- Output -->
 
         <connection>
-            <from>/nearBlobber/3dpoints:o</from>
+            <from>/dispBlobber/3dpoints:o</from>
             <to></to>
             <protocol>tcp</protocol>
         </connection>
@@ -96,7 +91,7 @@
         </connection>
 
         <connection>
-            <from>/nearBlobber/opt:o</from>
+            <from>/dispBlobber/opt:o</from>
             <to>/nearBlobberViewer</to>
             <protocol>tcp</protocol>
         </connection>
