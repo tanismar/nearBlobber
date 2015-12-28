@@ -9,8 +9,8 @@ This module takes as input a disparity map (grayscale image) and provides as out
 
 - binary image with the segmented blob
 - cropped rectangular region enclosing the segmented blob on the input disparity map
-- 2D top-left (TL) and bottom-right (BR) pixel coordinates of the cropped rectangular region on the input disparity map
-- 2D pixel coordinates of the centroid of the segmented blob, eventually averaged over a buffer of arbitrary size, on the input disparity map
+- 2D top-left (TL) and bottom-right (BR) pixel coordinates of the cropped rectangular region on the input disparity map - eventually averaged over a frame buffer of arbitrary size -
+- 2D pixel coordinates of the centroid of the segmented blob - eventually averaged over the same frame buffer - on the input disparity map
 
 If the input disparity map comes from the [SFM](https://github.com/robotology/stereo-vision) module and this module is connected to the RPC port of the [SFM](https://github.com/robotology/stereo-vision), then  the stereo pairs (correspondent 2D points on the other camera) and the 3D re-projections in the world reference frame of the above points (blob's TL and BR ROI vertices and centroid) are also provided as output.
 
