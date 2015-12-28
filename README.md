@@ -17,8 +17,8 @@ If the input disparity map comes from the [SFM](https://github.com/robotology/st
 The centroid's coordinates of the closest blob in the scene provided by this module can be fed to the [ARE](http://wiki.icub.org/iCub_documentation/group__actionsRenderingEngine.html) or directly to the [iKinGazeCtrl](http://wiki.icub.org/iCub_documentation/group__iKinGazeCtrl.html) module in order to focus the robot's gaze on the object of interest. If the data connection is streamlined then the robot keeps on focusing on the closest proto-object in its visual field.
 
 Example applications of the usage of this module can be found here:
-- [onthefly-recognition](https://github.com/robotology/onthefly-recognition) Demo to teach the iCub to recognize to new objects on-the-fly.
-- [icubworld](https://github.com/GiuliaP/icubworld) Application to acquire a dataset of images from the iCub's cameras while the robot is observing a set of objects shown by a human operator. The dataset can be used, e.g., to train/benchmark offline a visual recognition system.
+- [onthefly-recognition](https://github.com/robotology/onthefly-recognition): demo to teach the iCub to recognize new objects on-the-fly.
+- [icubworld](https://github.com/GiuliaP/icubworld): application to acquire a dataset of images from the iCub's cameras while the robot is observing a set of objects shown by a human operator. The dataset can be used, e.g., to train/benchmark offline a visual recognition system.
 
 ## Installation
 
