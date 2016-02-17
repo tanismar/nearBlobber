@@ -101,7 +101,7 @@
      
         <output>
             <type>Bottle</type>
-            <port carrier="tcp">/dispBlobber/sfm/rpc</port
+            <port carrier="tcp">/dispBlobber/sfm/rpc</port>
             <description>RPC port communicating with the SFM module RPC port.</description>
         </output>
      
